@@ -1,4 +1,4 @@
-//! Repository: https://github.com/brunoczim/coroustine
+//! Repository: https://github.com/brunoczim/corustine
 //! This crate implements coroutines in rust.
 //! Please note that, in this implementation, one
 //! cannot yield a function inside some control flow structre.
@@ -9,9 +9,9 @@
 //! Instead, they must be wrapped with `CoFn` or a custom wrapper.
 //! Look at this example.
 //! ```rust
-//! extern crate coroustine;
+//! extern crate corustine;
 //!
-//! use coroustine::{CoFn, CoTasking, Yield, Done};
+//! use corustine::{CoFn, CoTasking, Yield, Done};
 //!
 //!
 //! #[derive(Debug, Clone, PartialEq, Eq)]

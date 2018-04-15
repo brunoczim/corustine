@@ -1,5 +1,5 @@
 [package]
-name = "coroustine"
+name = "corustine"
 version = "0.1.0"
 authors = ["Bruno Corrêa Zimmermann <brunoczim@gmail.com>"]
 

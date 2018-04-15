@@ -1,7 +1,7 @@
 # coro
 Rust yield-like coroutines!
 
-See more at docs: https://brunoczim.github.io/coroustine/coroustine/
+See more at docs: https://brunoczim.github.io/corustine/corustine/
 
 # Example
 

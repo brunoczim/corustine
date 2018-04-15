@@ -6,9 +6,9 @@ See more at docs: https://brunoczim.github.io/corustine/corustine/
 # Example
 
 ```rust
-extern crate coro;
+extern crate corustine;
 
-use coro::{CoFn, CoTasking, Yield, Done};
+use corustine::{CoFn, CoTasking, Yield, Done};
 
 
 #[derive(Debug, Clone, PartialEq, Eq)]

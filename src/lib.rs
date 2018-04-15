@@ -1,3 +1,4 @@
+//! Repository: https://github.com/brunoczim/coro
 //! This crate implements coroutines in rust.
 //! Please note that, in this implementation, one
 //! cannot yield a function inside some control flow structre.

@@ -4,10 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="generator" content="rustdoc">
-    <meta name="description" content="Source to the Rust file `src/lib.rs`.">
+    <meta name="description" content="Source to the Rust file `src/channel.rs`.">
     <meta name="keywords" content="rust, rustlang, rust-lang">
 
-    <title>lib.rs.html -- source</title>
+    <title>channel.rs.html -- source</title>
 
     <link rel="stylesheet" type="text/css" href="../../normalize.css">
     <link rel="stylesheet" type="text/css" href="../../rustdoc.css"
@@ -99,89 +99,51 @@
 <span id="42">42</span>
 <span id="43">43</span>
 <span id="44">44</span>
-<span id="45">45</span>
-<span id="46">46</span>
-<span id="47">47</span>
-<span id="48">48</span>
-<span id="49">49</span>
-<span id="50">50</span>
-<span id="51">51</span>
-<span id="52">52</span>
-<span id="53">53</span>
-<span id="54">54</span>
-<span id="55">55</span>
-<span id="56">56</span>
-<span id="57">57</span>
-<span id="58">58</span>
-<span id="59">59</span>
-<span id="60">60</span>
-<span id="61">61</span>
-<span id="62">62</span>
-<span id="63">63</span>
 </pre><pre class="rust ">
-<span class="doccomment">//! Repository: &lt;https://github.com/brunoczim/corustine&gt;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! This crate implements coroutines in rust.</span>
-<span class="doccomment">//! Please note that, in this implementation, one</span>
-<span class="doccomment">//! cannot yield a function inside some control flow structre.</span>
-<span class="doccomment">//! Instead, the function must return either a `Yield` or a</span>
-<span class="doccomment">//! `Done`. Also, yielding only returns a continuation, but</span>
-<span class="doccomment">//! no value. This means that all communication is made through</span>
-<span class="doccomment">//! channels.</span>
-<span class="doccomment">//! Look at this example.</span>
-<span class="doccomment">//! ```rust</span>
-<span class="doccomment">//! extern crate corustine;</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! use corustine::{</span>
-<span class="doccomment">//!     task::{CoTasking, Yield, Done},</span>
-<span class="doccomment">//!     channel::{Channel, Cheue},</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]</span>
-<span class="doccomment">//! enum Task {</span>
-<span class="doccomment">//!     Producer,</span>
-<span class="doccomment">//!     Consumer,</span>
-<span class="doccomment">//! }</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let mut ch1 = Cheue::new();</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let producer = {</span>
-<span class="doccomment">//!     let mut ch1 = ch1.clone();</span>
-<span class="doccomment">//!     let mut m = 1;</span>
-<span class="doccomment">//!     let mut n = 0;</span>
-<span class="doccomment">//!     move || {</span>
-<span class="doccomment">//!         ch1.send(m);</span>
-<span class="doccomment">//!         let tmp = n;</span>
-<span class="doccomment">//!         n = m;</span>
-<span class="doccomment">//!         m += tmp;</span>
-<span class="doccomment">//!         Yield(Task::Consumer)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let consumer = {</span>
-<span class="doccomment">//!     let mut seq = Vec::new();</span>
-<span class="doccomment">//!     let lim = 10;</span>
-<span class="doccomment">//!     move || if seq.len() &gt;= lim {</span>
-<span class="doccomment">//!         Done(seq.clone())</span>
-<span class="doccomment">//!     } else {</span>
-<span class="doccomment">//!         seq.push(ch1.recv().unwrap());</span>
-<span class="doccomment">//!         Yield(Task::Producer)</span>
-<span class="doccomment">//!     }</span>
-<span class="doccomment">//! };</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! let result = CoTasking::new()</span>
-<span class="doccomment">//!     .task(Task::Consumer, consumer)</span>
-<span class="doccomment">//!     .task(Task::Producer, producer)</span>
-<span class="doccomment">//!     .run(Task::Producer);</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! assert_eq!(result, &amp;[1, 1, 2, 3, 5, 8, 13, 21, 34, 55]);</span>
-<span class="doccomment">//! ```</span>
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="ident">VecDeque</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 
-<span class="doccomment">/// This module supplies a channel trait and some implementations.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">channel</span>;
+<span class="doccomment">/// A generic declaration for channels.</span>
+<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
 
-<span class="doccomment">/// This module supplies the facilities for creating tasks.</span>
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">task</span>;
+    <span class="doccomment">/// Just sends a value through the channel.</span>
+    <span class="doccomment">/// Must always succeed.</span>
+    <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>);
+
+    <span class="doccomment">/// Receives a value. If there is nothing</span>
+    <span class="doccomment">/// avaible in the channel, returns `None`.</span>
+    <span class="kw">fn</span> <span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+
+}
+
+<span class="doccomment">/// &quot;Channel Queue&quot; - An implementation of channel using queues.</span>
+<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Cheue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="ident">messages</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Cheue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+
+    <span class="doccomment">/// Creates an empty channel.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="self">Self</span> {
+            <span class="ident">messages</span>: <span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">Mutex</span>::<span class="ident">new</span>(<span class="ident">VecDeque</span>::<span class="ident">new</span>()))
+        }
+    }
+
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Channel</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Cheue</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+
+    <span class="kw">fn</span> <span class="ident">send</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">value</span>: <span class="ident">T</span>) {
+        <span class="self">self</span>.<span class="ident">messages</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>().<span class="ident">push_back</span>(<span class="ident">value</span>);
+    }
+
+    <span class="kw">fn</span> <span class="ident">recv</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">messages</span>.<span class="ident">lock</span>().<span class="ident">unwrap</span>().<span class="ident">pop_front</span>()
+    }
+
+}
 </pre>
 </section>
     <section id='search' class="content hidden"></section>

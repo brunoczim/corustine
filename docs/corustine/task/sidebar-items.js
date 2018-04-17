@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Pause","Must be returned from a single call of `resume`."]],"struct":[["CoTasking","Builds a Co-operative tasking with some given coroutines."]]});
